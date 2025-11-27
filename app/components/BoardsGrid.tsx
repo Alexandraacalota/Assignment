@@ -1,7 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import BoardItem from "./BoardItem";
 import { getBoards, createBoard, deleteBoard, updateBoard } from "@/app/actions";
+import posthog, { initPostHog } from "@/lib/posthog";
 
 type BoardType = Awaited<ReturnType<typeof getBoards>>;
 
@@ -9,10 +10,22 @@ export default function BoardsGrid({ boardsInitial }: { boardsInitial: BoardType
   const [boards, setBoards] = useState<BoardType>(boardsInitial);
   const [newBoard, setNewBoard] = useState("");
 
+  // Initialize PostHog and track Landing Page Viewed
+  useEffect(() => {
+    initPostHog();
+    posthog.capture("Landing Page Viewed");
+  }, []);
+
   const handleAdd = async () => {
     if (!newBoard.trim()) return;
     await createBoard(newBoard.trim());
     setBoards(await getBoards());
+
+    // Track Board Created
+    posthog.capture("Board Created", {
+      board_name: newBoard.trim(),
+    });
+
     setNewBoard("");
   };
 
@@ -42,7 +55,14 @@ export default function BoardsGrid({ boardsInitial }: { boardsInitial: BoardType
           className="rounded-r-lg bg-blue-600 p-2 text-white flex items-center justify-center gap-1 hover:bg-blue-700 transition"
           title="Add Board"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+            className="w-5 h-5"
+          >
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
           Add

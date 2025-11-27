@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Trello Clone
+## Startup Engineering Assignment
 
-## Getting Started
+A simple dashboard application built with Next.js, MongoDB and TailwindCSS.
 
-First, run the development server:
+In this app, users can create boards, add lists inside each board and then
+cards inside of each list. Everything is stored in a MongoDB database.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+On the landing page of the application, the user is able to create new boards,
+edit the name of the existing ones, delete boards and has the ability to
+navigate inside a board to see its content.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Inside each board, the user can create lists, edit their name or delete them.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Then, inside each list, users can add cards to it, edit a card's title or
+description or delete cards.
 
-## Learn More
+## Implementation
+### Application structure
 
-To learn more about Next.js, take a look at the following resources:
+BoardsGrid is the homepage of the application, where users can see all boards
+in a grid allignment.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+BoardItem represents one single board card with its name, link to open it and
+two buttons for editing its name or deleting the board.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+ListColumn represents one column inside of a board. It displays the name of
+the list, lets the user rename or delete it, displays cards and contains a
+field dedicated to adding new cards to the list.
 
-## Deploy on Vercel
+CardItem represents one single card inside of a list. It includes only a title
+and a description.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+app/board/[id]/page.tsx
+- Fetches one board's name and lists
+- Renders ListColumn for each of the lists contained by that board
+- Provides an input to create new lists and also a back to the boards
+list button.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Database
+
+I chose MongoDB as database for my application because it is very flexible with
+its models for boards, lists and cards with the use of Mongoose library and it
+integrates also easily with Next.js.
+
+### Components library
+
+I have decided to use TailwindCSS for a fast styling of buttons like edit,
+delete, save and cancel using svg icons.
+
+### PostHog
+
+I am using PostHog to collect user interaction metrics in my application in
+order to have a better understanding of their interaction with the boards,
+lists and cards so that I can make decisions in the future to improve the
+user experience and to increase engagement with the app.
+
+It will also help me see if the app is straight-forward or there is any way
+in which I can make the application easier to use for all possible users.
+
+I am collecting data using a Funnel about four major events in the app:
+Landing Page Viewed, Board Created, Board Page Viewed, List Added and
+Card Added.
+In this way, I can know if users get to use all features of the application
+or just drop because they might not understand how to use it or maybe just
+don't like the way something in the app works.
+A/B testing could also help to better understand why something might work better
+if implemented differently, but I have not yet used it for this app.
+
+## Deployment on Vercel
+assignment-lilac-alpha.vercel.app

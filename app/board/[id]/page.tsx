@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import ListColumn from "@/app/components/ListColumn";
 import { getLists, createList, getBoard } from "@/app/actions";
 import Link from "next/link";
+import posthog, { initPostHog } from "@/lib/posthog";
 
 interface BoardPageProps {
   params: { id: string };
@@ -30,6 +31,7 @@ export default function BoardPage({ params }: BoardPageProps) {
     setLists(data);
   };
 
+  // Fetch board and lists on mount / board change
   useEffect(() => {
     const init = async () => {
       await fetchBoard();
@@ -38,11 +40,32 @@ export default function BoardPage({ params }: BoardPageProps) {
     init();
   }, [params.id]);
 
+  // Initialize PostHog and track "Board Page Viewed" after boardName is loaded
+  useEffect(() => {
+    initPostHog();
+  }, []);
+
+  useEffect(() => {
+    if (boardName) {
+      posthog.capture("Board Page Viewed", {
+        board_id: params.id,
+        board_name: boardName,
+      });
+    }
+  }, [boardName]);
+
+  // Handle adding a list
   const handleAddList = async () => {
     if (!newListName.trim()) return;
     await createList(params.id, newListName.trim());
     setNewListName("");
     fetchLists();
+
+    // Track List Added
+    posthog.capture("List Added", {
+      board_id: params.id,
+      list_name: newListName.trim(),
+    });
   };
 
   return (
@@ -51,7 +74,14 @@ export default function BoardPage({ params }: BoardPageProps) {
         href="/"
         className="flex items-center gap-2 mb-4 text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-200"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={2.5}
+          stroke="currentColor"
+          className="w-6 h-6"
+        >
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
         </svg>
         Boards
@@ -79,7 +109,14 @@ export default function BoardPage({ params }: BoardPageProps) {
             className="w-full bg-blue-600 text-white p-2 rounded flex items-center justify-center gap-2 hover:bg-blue-700 transition"
             title="Add List"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              className="w-5 h-5"
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
             </svg>
             Add List
