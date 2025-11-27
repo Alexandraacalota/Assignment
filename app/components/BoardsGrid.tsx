@@ -10,7 +10,6 @@ export default function BoardsGrid({ boardsInitial }: { boardsInitial: BoardType
   const [boards, setBoards] = useState<BoardType>(boardsInitial);
   const [newBoard, setNewBoard] = useState("");
 
-  // Initialize PostHog and track Landing Page Viewed
   useEffect(() => {
     initPostHog();
     posthog.capture("Landing Page Viewed");
@@ -21,7 +20,6 @@ export default function BoardsGrid({ boardsInitial }: { boardsInitial: BoardType
     await createBoard(newBoard.trim());
     setBoards(await getBoards());
 
-    // Track Board Created
     posthog.capture("Board Created", {
       board_name: newBoard.trim(),
     });

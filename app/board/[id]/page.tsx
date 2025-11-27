@@ -31,7 +31,6 @@ export default function BoardPage({ params }: BoardPageProps) {
     setLists(data);
   };
 
-  // Fetch board and lists on mount / board change
   useEffect(() => {
     const init = async () => {
       await fetchBoard();
@@ -40,7 +39,6 @@ export default function BoardPage({ params }: BoardPageProps) {
     init();
   }, [params.id]);
 
-  // Initialize PostHog and track "Board Page Viewed" after boardName is loaded
   useEffect(() => {
     initPostHog();
   }, []);
@@ -54,14 +52,12 @@ export default function BoardPage({ params }: BoardPageProps) {
     }
   }, [boardName]);
 
-  // Handle adding a list
   const handleAddList = async () => {
     if (!newListName.trim()) return;
     await createList(params.id, newListName.trim());
     setNewListName("");
     fetchLists();
 
-    // Track List Added
     posthog.capture("List Added", {
       board_id: params.id,
       list_name: newListName.trim(),

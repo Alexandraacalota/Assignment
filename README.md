@@ -69,5 +69,5 @@ don't like the way something in the app works.
 A/B testing could also help to better understand why something might work better
 if implemented differently, but I have not yet used it for this app.
 
-## Deployment on Vercel
+## URL for deployment of the app using Vercel
 assignment-lilac-alpha.vercel.app

@@ -23,7 +23,6 @@ export default function ListColumn({ _id, name, fetchLists }: ListColumnProps) {
   const [listName, setListName] = useState(name);
   const [editMode, setEditMode] = useState(false);
 
-  // Initialize PostHog
   useEffect(() => {
     initPostHog();
   }, []);
@@ -34,14 +33,12 @@ export default function ListColumn({ _id, name, fetchLists }: ListColumnProps) {
     fetchCardsData();
   }, [_id]);
 
-  // Handle adding a card
   const handleAddCard = async () => {
     if (!newCard.trim()) return;
     await createCard(_id, newCard.trim());
     setNewCard("");
     fetchCardsData();
 
-    // Track Card Added
     posthog.capture("Card Added", {
       list_id: _id,
       card_title: newCard.trim(),
