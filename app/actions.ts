@@ -1,17 +1,40 @@
 "use server";
 
 import connectMongo from "@/db/mongoose";
-import BoardModel, { Board } from "@/model/board";
-import ListModel, { List } from "@/model/list";
-import CardModel, { Card } from "@/model/card";
-import { Types } from "mongoose";
+import BoardModel from "@/model/board";
+import ListModel from "@/model/list";
+import CardModel from "@/model/card";
+import { Types, ObjectId } from "mongoose";
 
+export interface BoardType {
+  _id: string;
+  name: string;
+  lists: string[];
+}
+
+export interface ListType {
+  _id: string;
+  name: string;
+  board: string;
+  cards: string[];
+}
+
+export interface CardTypeClient {
+  _id: string;
+  list: string;
+  title: string;
+  description: string;
+}
 
 // Actions for boards
-export async function getBoards(): Promise<Board[]> {
+export async function getBoards(): Promise<BoardType[]> {
   await connectMongo();
-  const boards = await BoardModel.find({}).lean();
-  return boards.map(b => ({ ...b, _id: b._id.toString() }));
+  const boards = await BoardModel.find({}).lean<Array<{ _id: ObjectId; name: string; lists: Types.ObjectId[] }>>();
+  return boards.map(b => ({
+    _id: b._id.toString(),
+    name: b.name,
+    lists: b.lists.map(l => l.toString())
+  }));
 }
 
 export async function createBoard(name: string) {
@@ -28,24 +51,33 @@ export async function updateBoard(id: string, name: string) {
 export async function deleteBoard(id: string) {
   await connectMongo();
   const lists = await ListModel.find({ board: id });
-  const listIds = lists.map((list) => list._id);
+  const listIds = lists.map(l => l._id);
   await CardModel.deleteMany({ list: { $in: listIds } });
   await ListModel.deleteMany({ board: id });
   await BoardModel.findByIdAndDelete(id);
 }
 
-export async function getBoard(id: string) {
+export async function getBoard(id: string): Promise<BoardType | null> {
   await connectMongo();
-  const board = await BoardModel.findById(id).lean();
+  const board = await BoardModel.findById(id).lean<{ _id: ObjectId; name: string; lists: Types.ObjectId[] }>();
   if (!board) return null;
-  return { ...board, _id: board._id.toString() };
+  return {
+    _id: board._id.toString(),
+    name: board.name,
+    lists: board.lists.map(l => l.toString())
+  };
 }
 
 // Actions for lists
-export async function getLists(boardId: string): Promise<List[]> {
+export async function getLists(boardId: string): Promise<ListType[]> {
   await connectMongo();
-  const lists = await ListModel.find({ board: boardId }).lean();
-  return lists.map(l => ({ ...l, _id: l._id.toString(), board: l.board.toString() }));
+  const lists = await ListModel.find({ board: boardId }).lean<Array<{ _id: ObjectId; name: string; board: ObjectId; cards: Types.ObjectId[] }>>();
+  return lists.map(l => ({
+    _id: l._id.toString(),
+    name: l.name,
+    board: l.board.toString(),
+    cards: l.cards.map(c => c.toString())
+  }));
 }
 
 export async function createList(boardId: string, name: string) {
@@ -70,10 +102,15 @@ export async function deleteList(id: string) {
 }
 
 // Actions for cards
-export async function getCards(listId: string): Promise<Card[]> {
+export async function getCards(listId: string): Promise<CardTypeClient[]> {
   await connectMongo();
-  const cards = await CardModel.find({ list: listId }).lean();
-  return cards.map(c => ({ ...c, _id: c._id.toString(), list: c.list.toString() }));
+  const cards = await CardModel.find({ list: listId }).lean<Array<{ _id: ObjectId; title: string; description: string; list: ObjectId }>>();
+  return cards.map(c => ({
+    _id: c._id.toString(),
+    list: c.list.toString(),
+    title: c.title,
+    description: c.description
+  }));
 }
 
 export async function createCard(listId: string, title: string) {

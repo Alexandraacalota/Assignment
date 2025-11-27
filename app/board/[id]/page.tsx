@@ -2,16 +2,21 @@
 import { useState, useEffect } from "react";
 import ListColumn from "@/app/components/ListColumn";
 import { getLists, createList, getBoard } from "@/app/actions";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 interface BoardPageProps {
   params: { id: string };
 }
 
+interface ListType {
+  _id: string;
+  name: string;
+  board: string;
+  cards: string[];
+}
+
 export default function BoardPage({ params }: BoardPageProps) {
-  const router = useRouter();
-  const [lists, setLists] = useState<any[]>([]);
+  const [lists, setLists] = useState<ListType[]>([]);
   const [newListName, setNewListName] = useState("");
   const [boardName, setBoardName] = useState("");
 
@@ -26,9 +31,12 @@ export default function BoardPage({ params }: BoardPageProps) {
   };
 
   useEffect(() => {
-    fetchBoard();
-    fetchLists();
-  }, []);
+    const init = async () => {
+      await fetchBoard();
+      await fetchLists();
+    };
+    init();
+  }, [params.id]);
 
   const handleAddList = async () => {
     if (!newListName.trim()) return;
@@ -42,9 +50,9 @@ export default function BoardPage({ params }: BoardPageProps) {
       <Link
         href="/"
         className="flex items-center gap-2 mb-4 text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-200"
-        >
+      >
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
         </svg>
         Boards
       </Link>
@@ -58,11 +66,10 @@ export default function BoardPage({ params }: BoardPageProps) {
           <ListColumn key={list._id} _id={list._id} name={list.name} fetchLists={fetchLists} />
         ))}
 
-        {/* Add new list */}
         <div className="min-w-[250px] p-2 bg-slate-200 rounded flex-shrink-0 flex flex-col items-center justify-center">
           <input
             type="text"
-            placeholder="New list name"
+            placeholder="Add a list..."
             value={newListName}
             onChange={(e) => setNewListName(e.target.value)}
             className="w-full p-2 mb-2 rounded outline-none text-black"

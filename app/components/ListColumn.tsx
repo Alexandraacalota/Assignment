@@ -3,41 +3,46 @@ import { useState, useEffect } from "react";
 import CardItem from "./CardItem";
 import { getCards, createCard, deleteCard, updateCard, updateList, deleteList } from "@/app/actions";
 
-type CardType = Awaited<ReturnType<typeof getCards>>;
-
 interface ListColumnProps {
   _id: string;
   name: string;
   fetchLists?: () => void;
 }
 
+interface CardType {
+  _id: string;
+  title: string;
+  description: string;
+  list: string;
+}
+
 export default function ListColumn({ _id, name, fetchLists }: ListColumnProps) {
-  const [cards, setCards] = useState<CardType>([]);
+  const [cards, setCards] = useState<CardType[]>([]);
   const [newCard, setNewCard] = useState("");
   const [listName, setListName] = useState(name);
   const [editMode, setEditMode] = useState(false);
 
-  const fetchCards = async () => setCards(await getCards(_id));
+  const fetchCardsData = async () => setCards(await getCards(_id));
 
   useEffect(() => {
-    fetchCards();
-  }, []);
+    fetchCardsData();
+  }, [_id]);
 
   const handleAddCard = async () => {
     if (!newCard.trim()) return;
     await createCard(_id, newCard.trim());
     setNewCard("");
-    fetchCards();
+    fetchCardsData();
   };
 
   const handleDeleteCard = async (cardId: string) => {
     await deleteCard(cardId);
-    fetchCards();
+    fetchCardsData();
   };
 
   const handleEditCard = async (cardId: string, title: string, description: string) => {
     await updateCard(cardId, title, description);
-    fetchCards();
+    fetchCardsData();
   };
 
   const handleEditList = async () => {
@@ -56,6 +61,7 @@ export default function ListColumn({ _id, name, fetchLists }: ListColumnProps) {
         {editMode ? (
           <div className="flex gap-1 w-full">
             <input value={listName} onChange={(e) => setListName(e.target.value)} className="p-1 rounded grow" />
+
             <button onClick={handleEditList}
             className="p-1 rounded hover:bg-green-200"
             title="Save">
@@ -63,6 +69,7 @@ export default function ListColumn({ _id, name, fetchLists }: ListColumnProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </button>
+
             <button onClick={() => setEditMode(false)}
             className="p-1 rounded hover:bg-gray-200"
             title="Cancel">
@@ -82,6 +89,7 @@ export default function ListColumn({ _id, name, fetchLists }: ListColumnProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 3.487l3.651 3.65-10.607 10.607H6.255v-3.651l10.607-10.607z" />
                 </svg>
               </button>
+
               <button onClick={handleDeleteList}
               className="p-1 rounded hover:bg-red-200"
               title="Delete List">
@@ -106,13 +114,11 @@ export default function ListColumn({ _id, name, fetchLists }: ListColumnProps) {
           value={newCard}
           onChange={(e) => setNewCard(e.target.value)}
           className="grow p-1 rounded"
-          placeholder="New card"
+          placeholder="Add a card..."
         />
-        <button
-          onClick={handleAddCard}
-          className="bg-blue-600 text-white p-1 rounded flex-shrink-0 flex items-center justify-center gap-1 hover:bg-blue-700 transition"
-          title="Add Card"
-        >
+        <button onClick={handleAddCard}
+        className="bg-blue-600 text-white p-1 rounded flex-shrink-0 flex items-center justify-center gap-1 hover:bg-blue-700 transition"
+        title="Add Card">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
